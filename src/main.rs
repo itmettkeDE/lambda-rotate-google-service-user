@@ -92,8 +92,8 @@ const ENV_VAR_LOG_LEVEL: &str = "LOG_LEVEL";
 struct Runner;
 
 #[async_trait::async_trait]
-impl lambda_runtime_types::rotate::RotateRunner<(), serde_json::Value> for Runner {
-    async fn setup() -> anyhow::Result<()> {
+impl<'a> lambda_runtime_types::rotate::RotateRunner<'a, (), serde_json::Value> for Runner {
+    async fn setup(_region: &'a str) -> anyhow::Result<()> {
         use anyhow::Context;
         use std::str::FromStr;
 
@@ -109,10 +109,9 @@ impl lambda_runtime_types::rotate::RotateRunner<(), serde_json::Value> for Runne
     }
 
     async fn create(
-        _shared: &(),
+        _shared: &'a (),
         mut secret_cur: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
         _smc: &lambda_runtime_types::rotate::Smc,
-        _region: &str,
     ) -> anyhow::Result<lambda_runtime_types::rotate::SecretContainer<serde_json::Value>> {
         use anyhow::Context;
 
@@ -130,10 +129,9 @@ impl lambda_runtime_types::rotate::RotateRunner<(), serde_json::Value> for Runne
     }
 
     async fn set(
-        _shared: &(),
+        _shared: &'a (),
         _secret_cur: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
         _secret_new: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
-        _region: &str,
     ) -> anyhow::Result<()> {
         // Not necessary as the `lambda_runtime_types::rotate::RotateRunner::create` already
         // creates the key on google side
@@ -141,9 +139,8 @@ impl lambda_runtime_types::rotate::RotateRunner<(), serde_json::Value> for Runne
     }
 
     async fn test(
-        _shared: &(),
+        _shared: &'a (),
         mut secret_new: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
-        _region: &str,
     ) -> anyhow::Result<()> {
         let value = get_mut_json_entry(&mut secret_new)?;
         let credential_json = std::mem::replace(value, serde_json::Value::Null);
@@ -153,10 +150,9 @@ impl lambda_runtime_types::rotate::RotateRunner<(), serde_json::Value> for Runne
     }
 
     async fn finish(
-        _shared: &(),
+        _shared: &'a (),
         mut secret_cur: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
         mut secret_new: lambda_runtime_types::rotate::SecretContainer<serde_json::Value>,
-        _region: &str,
     ) -> anyhow::Result<()> {
         let value_new = get_mut_json_entry(&mut secret_new)?;
         let credential_json_new = std::mem::replace(value_new, serde_json::Value::Null);
