@@ -1,3 +1,5 @@
+> This Repo is not in use anymore. These functions are now available at https://github.com/itmettkeDE/lambdas
+
 # lambda-rotate-google-service-user
 
 This tool rotates Google Service User Credentials stored in AWS Secret Manager
